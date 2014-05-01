@@ -13,13 +13,16 @@ var DataStore = new Array();
 var playableHours = {"code" : "13:00:00;15:00:00", "text" : "1.00pm - 3.00pm"};
 var playableField = "5-a-side";
 var receiverNumber = "6594343564";
+var intervalTime = 400;
 var smsData;
 //var receiverNumber = "6582656308"; //anh Hung number
-
+/*
 setInterval(function(){
-    startJob() },  4000 );
+    startJob()
+}, intervalTime );
+*/
 
-//startJob();
+startJob();
 
 function startJob(){
     Step(
@@ -39,7 +42,6 @@ function startJob(){
                 throw err;
             } else {
                 var message = "Book it Now! StWilfrid Field available on ";
-
                 for (var i=0; i<smsData.length; i++) {
                     message += smsData[i].date + ", ";
                 }
