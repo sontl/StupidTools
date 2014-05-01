@@ -9,25 +9,25 @@ var Step = require('step');
 
 var p = plivo.RestAPI(require('./config'));
 var playableDays = ["Saturday", "Sunday"];
-var DataStore = new Array();
-var playableHours = {"code" : "13:00:00;15:00:00", "text" : "1.00pm - 3.00pm"};
+var DataStore = [];
+var playableHours = {"code" : "17:00:00;19:00:00", "text" : "5.00pm - 7.00pm"};
 var playableField = "5-a-side";
-var receiverNumber = "6594343564";
-var intervalTime = 400;
+var receiverNumbers = ["6594343564", "6591760650"] ;
+var intervalTime = 5 * 60 * 1000; //5 minutes
 var smsData;
 //var receiverNumber = "6582656308"; //anh Hung number
-/*
+
 setInterval(function(){
     startJob()
 }, intervalTime );
-*/
+
 
 startJob();
 
 function startJob(){
     Step(
         function craw() {
-            smsData = new Array(); //reset every time
+            smsData = []; //reset every time
             var playableDates = getPlayableDateNextIncomingWeeks(playableDays, 2);
             for (var i =0; i < playableDates.length; i++ ) {
                 var playableDate = playableDates[i];
@@ -41,23 +41,34 @@ function startJob(){
             if (err) {
                 throw err;
             } else {
-                var message = "Book it Now! StWilfrid Field available on ";
-                for (var i=0; i<smsData.length; i++) {
-                    message += smsData[i].date + ", ";
+                if (smsData.length > 0) {
+                    var message = "Book it Now! StWilfrid Field available on ";
+                    for (var i=0; i<smsData.length; i++) {
+                        message += smsData[i].date + ", ";
+                    }
+                    message += "for " + playableField + " fields, from " + playableHours.text + ". //SonTL";
+                    console.log(message);
+                    //send sms
+                    Step(
+                        function sendSmsToEachReceiver() {
+                            for (var i = 0; i < receiverNumbers.length; i++) {
+                                sendSms(receiverNumbers[i], message, this.parallel()); //async call
+                            }
+                        },
+                        function saveData(err, status, response) {
+                            if (err) {
+                                throw err;
+                            } else {
+                                console.log("res code: " + status);
+                                for (var i = 0; i < smsData.length; i++) {
+                                    smsData[i].smsCount++;
+                                }
+                                //save to DataStore
+                                saveToDataStoreArr(smsData);
+                            }
+                        }
+                    );
                 }
-                message += "for " + playableField + " fields, from " + playableHours.text + ". //SonTL";
-                console.log(message);
-                //send sms
-                 sendSms(receiverNumber, message, function(smsStatus){
-                     console.log(smsStatus);
-                     if (smsStatus === 202 || smsStatus === 200) {
-                         for ( var i=0; i<smsData.length; i++) {
-                             smsData[i].smsCount++;
-                         }
-                     }
-                     //save to DataStore
-                     saveToDataStoreArr(smsData);
-                 });
             }
         }
     );
@@ -77,7 +88,7 @@ function toPlayableData(date) {
         }
     }
     return playableData;
-};
+}
 
 function shoot(playableData, callback) {
     var myActiveSGurl = "https://members.myactivesg.com/facilities/ajax/getTimeslots?activity_id=207&venue_id=255&date="
@@ -87,9 +98,10 @@ function shoot(playableData, callback) {
         if (!error && response.statusCode == 200) {
             body = body.replace(/\\n/g, '');
             body = body.replace(/\\/g, '');
+            //console.log(body);
             var availableSlots = findAvailableSlots(body);
             if (availableSlots.length > 0) {
-               // console.log(playableData.date);
+                console.log(playableData.date);
                 smsData.push(playableData);
             }
         } else {
@@ -100,7 +112,7 @@ function shoot(playableData, callback) {
 }
 
 function findAvailableSlots(body) {
-    var availableSlots = new Array();
+    var availableSlots = [];
     var doc = new DOMParser().parseFromString(body,'text/xml');
     var docElements = doc.getElementsByTagName("input");
     for ( var i = 0; i < docElements.length; i++) {
@@ -114,7 +126,7 @@ function findAvailableSlots(body) {
         }
     }
     return availableSlots;
-};
+}
 
 function saveToDataStoreArr(dataArr) {
     for (var i=0; i<dataArr.length; i++) {
@@ -124,8 +136,9 @@ function saveToDataStoreArr(dataArr) {
 
 function saveToDataStore(data) {
     var isExistingInStore = false;
+    var dateInStore;
     for (var i=0; i< DataStore.length; i++) {
-        var dateInStore = DataStore[i];
+        dateInStore = DataStore[i];
         if (data.date === dateInStore.date) {
             isExistingInStore = true;
             break;
@@ -141,7 +154,7 @@ function saveToDataStore(data) {
 }
 
 function getPlayableDateNextIncomingWeeks(playableDays, numberOfWeek) {
-    var dates = new Array();
+    var dates = [];
     for ( var i = 0; i < numberOfWeek; i++) {
         for ( var j = 0; j < playableDays.length; j++) {
             dates.push(getIncomingDate(playableDays[j],i));
@@ -194,9 +207,8 @@ function getIncomingDate(day, numberOfWeek){
     }
 
     var incomingDate = new Date(incomingWeek.setDate(diffToMonday + x));
-    var incomingDateInFormat = convertDate(incomingDate);
     //console.log(day + " of next " + (numberOfWeek+1) + " week is " +  incomingDateInFormat);
-    return incomingDateInFormat;
+    return convertDate(incomingDate);
 }
 
 function convertDate(d) {
@@ -204,17 +216,10 @@ function convertDate(d) {
     return [ d.getFullYear(), pad(d.getMonth()+1), pad(d.getDate()) ].join('-');
 }
 
-function sleep(millis, callback) {
-    setTimeout(function()
-        { callback(); }
-        , millis);
-}
-
 /**
  * Send SMS from Plivo
  */
 function sendSms(receiverNumber, message, callback) {
-    var responseCode = 500;
     var params = {
         'src': '16012815562', // Caller Id
         'dst' : receiverNumber, // User Number to Call
@@ -223,9 +228,8 @@ function sendSms(receiverNumber, message, callback) {
     };
     console.log("sendSms called");
     p.send_message(params, function (status, response) {
-        responseCode = status;
         console.log('SMS Status: ', status);
         console.log('SMS API Response:\n', response);
-        callback(responseCode);
+        callback(null,status,response);
     });
 }
