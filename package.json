@@ -1,0 +1,11 @@
+{
+    "name": "MyActiveSGrobot",
+    "version": "0.0.1",
+    "dependencies" :
+    {
+        "request" : "~2.33.0",
+        "xmldom" : "~0.1.19",
+        "plivo" : ">=0.1.0",
+        "step" : ">=0.0.5"
+    }
+}
