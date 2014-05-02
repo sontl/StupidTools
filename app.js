@@ -27,6 +27,7 @@ startJob();
 function startJob(){
     Step(
         function craw() {
+            console.log("Start crawling on" + new Date());
             smsData = []; //reset every time
             var playableDates = getPlayableDateNextIncomingWeeks(playableDays, 2);
             for (var i =0; i < playableDates.length; i++ ) {
