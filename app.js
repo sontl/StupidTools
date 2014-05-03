@@ -29,7 +29,7 @@ function startJob(){
         function craw() {
             console.log("Start crawling on" + new Date());
             smsData = []; //reset every time
-            var playableDates = getPlayableDateNextIncomingWeeks(playableDays, 2);
+            var playableDates = getPlayableDateNextIncomingWeeks(playableDays, 3);
             for (var i =0; i < playableDates.length; i++ ) {
                 var playableDate = playableDates[i];
                 var playableData = toPlayableData(playableDate); // data format: { 'date': '2014-05-10', 'smsCount' : 3};
@@ -106,7 +106,7 @@ function shoot(playableData, callback) {
                 smsData.push(playableData);
             }
         } else {
-            console.log( "No response from MyActiveSG. Error: " + error);
+            console.log( "Error in response from MyActiveSG. " );
             console.log( "Response code: " + response.statusCode);
             console.log( "Body: " + body);
         }
