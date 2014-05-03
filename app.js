@@ -13,7 +13,7 @@ var DataStore = [];
 var playableHours = {"code" : "17:00:00;19:00:00", "text" : "5.00pm - 7.00pm"};
 var playableField = "5-a-side";
 var receiverNumbers = ["6594343564", "6582656308"] ;
-var intervalTime = 5 * 60 * 1000; //5 minutes
+var intervalTime = 2 * 60 * 1000; //2 minutes
 var smsData;
 //var receiverNumber = "6582656308"; //anh Hung number
 
@@ -27,7 +27,7 @@ startJob();
 function startJob(){
     Step(
         function craw() {
-            console.log("Start crawling on" + new Date());
+            console.log("-------- Start crawling on" + new Date() + " ----------");
             smsData = []; //reset every time
             var playableDates = getPlayableDateNextIncomingWeeks(playableDays, 3);
             for (var i =0; i < playableDates.length; i++ ) {
