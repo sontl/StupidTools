@@ -104,6 +104,8 @@ function shoot(playableData, callback) {
                 console.log(playableData.date);
                 smsData.push(playableData);
             }
+            console.log("1. " + myActiveSGurl);
+            console.log("2. Response OK. Slot found: " + availableSlots.length  );
         } else {
             console.log("1. " + myActiveSGurl);
             console.log("2. Error in response from MyActiveSG. " );
