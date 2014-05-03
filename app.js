@@ -94,7 +94,6 @@ function toPlayableData(date) {
 function shoot(playableData, callback) {
     var myActiveSGurl = "https://members.myactivesg.com/facilities/ajax/getTimeslots?activity_id=207&venue_id=255&date="
         + playableData.date;
-    console.log(myActiveSGurl);
     request(myActiveSGurl, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             body = body.replace(/\\n/g, '');
@@ -106,9 +105,10 @@ function shoot(playableData, callback) {
                 smsData.push(playableData);
             }
         } else {
-            console.log( "Error in response from MyActiveSG. " );
-            console.log( "Response code: " + response.statusCode);
-            console.log( "Body: " + body);
+            console.log("1. " + myActiveSGurl);
+            console.log("2. Error in response from MyActiveSG. " );
+            console.log("3. Response code: " + response.statusCode);
+            console.log("4. Body: " + body);
         }
         callback();
     })
