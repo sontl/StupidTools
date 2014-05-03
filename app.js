@@ -93,7 +93,7 @@ function toPlayableData(date) {
 
 function shoot(playableData, callback) {
     var myActiveSGurl = "https://members.myactivesg.com/facilities/ajax/getTimeslots?activity_id=207&venue_id=255&date="
-        + playableData.date;
+        + playableData.date + "&time_from=" + Date.now();
     request(myActiveSGurl, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             body = body.replace(/\\n/g, '');
